@@ -1,7 +1,6 @@
 .form-wrapper {
   display: flex;
   flex-direction: column;
-  height: 80vh;
   justify-content: space-between;
   align-items: flex-start;
   padding-top: 30px;
@@ -18,11 +17,13 @@
 }
 .form-wrapper .actions {
   width: 100%;
-  padding: 10px;
+  padding: 15px 10px;
   background-color: whitesmoke;
   display: flex;
   gap: 15px;
   align-items: center;
+  position: fixed;
+  bottom: 0;
 }
 
 .input {
@@ -105,7 +106,6 @@
 
 .addButton {
   background-color: white;
-  border-radius: 0;
   padding: 0;
   border: 0;
   transition: all 0.4s;

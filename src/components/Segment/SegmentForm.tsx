@@ -264,7 +264,6 @@ const SegmentForm = ({ handleClose }: SegmentProps) => {
             + Add new schema
           </button>
         </div>
-
         <div className={styles.actions}>
           <button type="submit" disabled={submitting}>
             Save the Segment
