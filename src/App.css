@@ -1,0 +1,30 @@
+/* #root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+} */
+
+.navbar {
+  position: fixed;
+  width: 100%;
+  padding: 10px 20px;
+  background-color: aquamarine;
+  top: 0;
+}
+
+main {
+  margin: 20px;
+  padding: 20px 10px;
+}
+
+main > button {
+  background-color: white;
+  border-radius: 3px;
+  border: 2px solid #676a6c;
+}
+main > button:hover,
+main > button:focus,
+main > button:focus-visible {
+  border-color: #18b193;
+}
