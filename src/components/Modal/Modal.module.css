@@ -41,8 +41,9 @@
   background: white;
   z-index: 2;
   width: 40%;
-  min-height: 100vh;
+  height: 100%;
   top: 0%;
+  bottom: 0%;
   right: 0%;
 }
 
@@ -69,6 +70,7 @@
 
 .modal-main .modal-body {
   position: relative;
+  height: calc(100% - 87px);
 }
 
 .modal-anim-enter-active {
@@ -82,22 +84,18 @@
 @keyframes moveLeft {
   0% {
     transform: translate(100%, 0%);
-    /* opacity: 0; */
   }
   100% {
     transform: translate(0%, 0%);
-    /* opacity: 1; */
   }
 }
 
 @keyframes moveRight {
   0% {
     transform: translate(0%, 0%);
-    /* opacity: 1; */
   }
   100% {
     transform: translate(100%, 0%);
-    /* opacity: 0; */
   }
 }
 
