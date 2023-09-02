@@ -147,13 +147,13 @@ const SegmentForm = ({ handleClose }: SegmentProps) => {
   };
 
   const onSubmitHandler = (event: React.FormEvent<HTMLFormElement>) => {
-    setSubmitting(true);
     event.preventDefault();
-    //return if name or a value of schema is empty;
     if (!segmentName.trim() || schemas.some((schema) => schema.value === '')) {
       alert('Please fill all the inputs');
       return;
     }
+    setSubmitting(true);
+    //return if name or a value of schema is empty;
     //changing the structure of schema data
     const schema = schemas.map((schema) => {
       const label = schema.options.find(
