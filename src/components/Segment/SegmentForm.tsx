@@ -1,83 +1,49 @@
+import { Option, allOptions } from '../../utils/optionsData';
+import DropDown from '../DropDown/DropDown';
 import { ModalProps } from '../Modal/Modal';
 import styles from './SegmentForm.module.css';
 import { useState, useReducer } from 'react';
 
-type Option = {
-  value: string;
-  label: string;
-  traits: string;
-};
-type Schema = {
-  value: string;
+export type Schema = {
+  selected: Option;
   options: Option[];
 };
 type SchemaAction = {
   type: string;
-  payload: { index?: number; value?: string };
+  payload?: { index: number; value?: string };
 };
 
-const allOptions: Option[] = [
-  {
-    value: 'first_name',
-    label: 'First Name',
-    traits: '/green-dot.png',
-  },
-  {
-    value: 'last_name',
-    label: 'Last Name',
-    traits: '/green-dot.png',
-  },
-  {
-    value: 'gender',
-    label: 'Gender',
-    traits: '/green-dot.png',
-  },
-  {
-    value: 'age',
-    label: 'Age',
-    traits: '/green-dot.png',
-  },
-  {
-    value: 'account_name',
-    label: 'Account Name',
-    traits: '/red-dot.png',
-  },
-  {
-    value: 'city',
-    label: 'City',
-    traits: '/red-dot.png',
-  },
-  {
-    value: 'state',
-    label: 'State',
-    traits: '/red-dot.png',
-  },
-];
-
-const reducer = (state: Schema[], action: SchemaAction): Schema[] => {
-  switch (action.type) {
-    case 'add_schema': {
+const dropDownReducer = (
+  state: Schema[],
+  { type, payload }: SchemaAction
+): Schema[] => {
+  switch (type) {
+    case 'ADD_SCHEMA': {
       //adding all the options from last schema to new schema and removing the last selected option alone
-      const lastSelected = state[state.length - 1];
-      const newOptions = lastSelected.options.filter(
-        (option) => option.value !== lastSelected.value
+      const lastSchema = state[state.length - 1];
+      const newOptions = lastSchema.options.filter(
+        (option) => option !== lastSchema.selected
       );
-      return [...state, { value: '', options: newOptions }];
+      return [
+        ...state,
+        {
+          selected: { value: '', label: '', traits: '/gray-dot.png' },
+          options: newOptions,
+        },
+      ];
     }
 
-    case 'delete_schema': {
-      const index = action.payload.index!;
-      const deleteValue = state[index].value;
+    case 'DELETE_SCHEMA': {
+      const index = payload!.index!;
+      const deleteValue = state[index].selected.value;
       //if no options are selected, removing the object
       if (!deleteValue) {
         const newState = [...state];
         newState.splice(index, 1);
         return [...newState];
       }
-      //adding the delete option to all the other schema options and then deleting it
-      const deleteOption = state[index].options.find(
-        (option) => option.value === deleteValue
-      )!;
+      //adding the selected option of delete to all the other schema options and then deleting it
+      const deleteOption = state[index].selected;
       const newState = state.map((schema) => {
         schema.options.push(deleteOption);
         return { ...schema };
@@ -86,41 +52,45 @@ const reducer = (state: Schema[], action: SchemaAction): Schema[] => {
       return [...newState];
     }
 
-    case 'change_schema': {
-      const index = action.payload.index!;
-      const value = action.payload.value!;
+    case 'CHANGE_SCHEMA': {
+      const index = payload!.index!;
+      const value = payload!.value;
       const newState = [...state];
-
+      const selected = state[index].options.find(
+        (option) => option.value === value
+      )!;
       //changing the value to new value
-      newState[index] = { ...newState[index], value };
-      const allValues = newState.map((schema) => schema.value);
-
+      newState[index] = { ...newState[index], selected };
+      const allValues = newState.map((schema) => schema.selected.value);
       //getting all the options which are not selected
       const newOptions = allOptions.filter(
         (options) => !allValues.includes(options.value)
       );
-
       //adding remaining options to all schemas and adding there own option
       const newSelects = newState.map((schema) => {
-        const ownOption = schema.options.find(
-          (option) => option.value === schema.value
-        )!;
+        const ownOption = schema.selected;
         return { ...schema, options: [ownOption, ...newOptions] };
       });
       return [...newSelects];
     }
+
     default: {
-      return [...state];
+      throw new Error(`Unknown action type: ${type}`);
     }
   }
 };
 
+const initialValue: Schema[] = [
+  {
+    selected: { value: '', label: '', traits: '/gray-dot.png' },
+    options: allOptions,
+  },
+];
+
 type SegmentProps = Pick<ModalProps, 'handleClose'>;
 
 const SegmentForm = ({ handleClose }: SegmentProps) => {
-  const [schemas, dispatch] = useReducer(reducer, [
-    { value: '', options: allOptions },
-  ]);
+  const [schemas, dispatch] = useReducer(dropDownReducer, initialValue);
   const [segmentName, setSegmentName] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
 
@@ -130,39 +100,39 @@ const SegmentForm = ({ handleClose }: SegmentProps) => {
   ) => {
     const value = event.target.value;
     if (!value) return;
-    dispatch({ type: 'change_schema', payload: { index, value } });
+    dispatch({ type: 'CHANGE_SCHEMA', payload: { index, value } });
   };
 
   const addSchemaHandler = () => {
-    const lastSelected = schemas[schemas.length - 1];
+    const lastSchema = schemas[schemas.length - 1];
     //if lastschema is not selected or length of schema is reached full, return
-    if (!lastSelected.value || schemas.length >= allOptions.length) return;
-    dispatch({ type: 'add_schema', payload: {} });
+    if (!lastSchema.selected.value || schemas.length >= allOptions.length)
+      return;
+    dispatch({ type: 'ADD_SCHEMA' });
   };
 
-  const DeleteHandler = (index: number) => {
+  const handleDelete = (index: number) => {
     //atleast 1 schema should be present;
     if (schemas.length < 2) return;
-    dispatch({ type: 'delete_schema', payload: { index } });
+    dispatch({ type: 'DELETE_SCHEMA', payload: { index } });
   };
 
   const onSubmitHandler = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!segmentName.trim() || schemas.some((schema) => schema.value === '')) {
+    //return if name or a value of schema is empty;
+    if (
+      !segmentName.trim() ||
+      schemas.some((schema) => !schema.selected.value)
+    ) {
       alert('Please fill all the inputs');
       return;
     }
     setSubmitting(true);
-    //return if name or a value of schema is empty;
     //changing the structure of schema data
     const schema = schemas.map((schema) => {
-      const label = schema.options.find(
-        (option) => schema.value === option.value
-      )!.label;
-      return { [schema.value]: label };
+      return { [schema.selected.value]: schema.selected.label };
     });
-    const data = { segment_name: segmentName, schema };
-
+    const data = { segment_name: segmentName.trim(), schema };
     // Sends a post request to webhook with data
     fetch('https://webhook.site/936c1aad-20bd-4b49-9d20-c373d98c0e18', {
       method: 'POST',
@@ -218,42 +188,10 @@ const SegmentForm = ({ handleClose }: SegmentProps) => {
           </div>
           <div className={styles.schemas}>
             {schemas.map((schema, index) => (
-              <div key={index}>
-                <img
-                  src={
-                    schema.value
-                      ? schema.options.find(
-                          (option) => option.value === schema.value
-                        )!.traits
-                      : '/gray-dot.png'
-                  }
-                  alt="traits"
-                  height={12}
-                  width={12}
-                />
-                <select
-                  value={schema.value}
-                  onChange={(e) => handleChange(e, index)}
-                >
-                  <option value={''} disabled hidden>
-                    Add schema to segment
-                  </option>
-                  {schema.options.map((option) => (
-                    <option value={option.value} key={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <button type="button" onClick={() => DeleteHandler(index)}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="1em"
-                    viewBox="0 0 448 512"
-                  >
-                    <path d="M432 256c0 17.7-14.3 32-32 32L48 288c-17.7 0-32-14.3-32-32s14.3-32 32-32l352 0c17.7 0 32 14.3 32 32z" />
-                  </svg>
-                </button>
-              </div>
+              <DropDown
+                {...{ schema, index, handleChange, handleDelete }}
+                key={index}
+              />
             ))}
           </div>
           <button

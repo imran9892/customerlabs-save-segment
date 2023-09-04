@@ -1,0 +1,36 @@
+.schema {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.schema > select {
+  padding: 10px;
+  outline: 0;
+  border: 1.5px solid #505050;
+  border-radius: 3px;
+  width: 100%;
+}
+.schema > select:active,
+.schema > select:focus-visible {
+  border-color: #18b193;
+}
+.schema > select > option {
+  background-color: whitesmoke;
+}
+
+.schema button {
+  display: flex;
+  align-items: center;
+  padding: 0.5em 0.8em;
+  border-radius: 0;
+  background-color: whitesmoke;
+  border: 0;
+  height: 100%;
+}
+.schema button:hover,
+.schema button:active,
+.schema button:focus,
+.schema button:focus-visible {
+  outline: 1.5px solid #18b193;
+  background-color: #e8e8e8;
+}
